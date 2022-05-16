@@ -1,0 +1,41 @@
+name: Test and build
+on:
+  push:
+    branches: [main]
+    tags:
+      - "*"
+
+env:
+  GO_VERSION: "^1.16.6"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          skip-go-installation: true
+
+      - name: Run tests
+        run: |
+          go test ./...
+
+      - name: Build binary
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-extldflags=-static' -o smtp-cli
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: smtp-cli
+          path: smtp-cli
+          if-no-files-found: error

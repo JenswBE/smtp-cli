@@ -21,7 +21,21 @@ func Test_E2ETestSuite(t *testing.T) {
 
 func (s *E2ETestSuite) SetupSuite() {
 	exec.Command("docker", "compose", "up", "-d")
-	time.Sleep(2 * time.Second)
+	for i := 0; true; i++ {
+		_, err := getMessages()
+		if err == nil {
+			// Server started
+			break
+		} else {
+			// Server still down
+			if i >= 10 {
+				// Exceeded 10 tries => Fail unit tests
+				require.FailNow(s.T(), "Unable to contact SMTP mock server after 20 seconds")
+			}
+			// Retry in 2 seconds
+			time.Sleep(2 * time.Second)
+		}
+	}
 }
 
 func (s *E2ETestSuite) SetupTest() {

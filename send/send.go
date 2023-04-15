@@ -27,7 +27,7 @@ type EmailConfig struct {
 func SendEmail(c EmailConfig) error {
 	// Connect to server
 	hostPort := fmt.Sprintf("%s:%d", c.Host, c.Port)
-	conn, err := tls.Dial("tcp", hostPort, &tls.Config{InsecureSkipVerify: c.AllowInsecureTLS})
+	conn, err := tls.Dial("tcp", hostPort, &tls.Config{InsecureSkipVerify: c.AllowInsecureTLS}) // #nosec G402
 	if err != nil {
 		log.Error().Err(err).Str("server", hostPort).Msg("Failed to connect to SMTP server over TLS")
 		return fmt.Errorf("failed to connect to SMTP server over TLS: %w", err)

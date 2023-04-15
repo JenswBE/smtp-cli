@@ -34,16 +34,15 @@ func (s *E2ETestSuite) SetupSuite() {
 		if err == nil {
 			// Server started
 			break
-		} else {
-			// Server still down
-			if i >= 10 {
-				// Exceeded 10 tries => Fail unit tests
-				require.FailNow(s.T(), "Unable to contact SMTP mock server after 20 seconds")
-			}
-			// Retry in 2 seconds
-			log.Info().Msg("Polling SMTP mock server failed, retrying in 2 seconds")
-			time.Sleep(2 * time.Second)
 		}
+		// Server still down
+		if i >= 10 {
+			// Exceeded 10 tries => Fail unit tests
+			require.FailNow(s.T(), "Unable to contact SMTP mock server after 20 seconds")
+		}
+		// Retry in 2 seconds
+		log.Info().Msg("Polling SMTP mock server failed, retrying in 2 seconds")
+		time.Sleep(2 * time.Second)
 	}
 	log.Info().Msg("SMTP mock server up and running")
 }

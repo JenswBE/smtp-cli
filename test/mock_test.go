@@ -22,9 +22,10 @@ func clearMessages() error {
 	req, _ := http.NewRequest(http.MethodDelete, smtpMockBaseURL+"/api/Messages/*", nil)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		_ = res.Body.Close()
+		return fmt.Errorf("failed to clear messages: %w", err)
 	}
-	return fmt.Errorf("failed to clear messages: %w", err)
+	_ = res.Body.Close()
+	return nil
 }
 
 func getMessages() ([]message, error) {
@@ -37,8 +38,10 @@ func getMessages() ([]message, error) {
 
 	// Parse response
 	var messages []message
-	err = json.NewDecoder(resp.Body).Decode(&messages)
-	return messages, fmt.Errorf("failed to parse get messages response: %w", err)
+	if err = json.NewDecoder(resp.Body).Decode(&messages); err != nil {
+		return nil, fmt.Errorf("failed to parse get messages response: %w", err)
+	}
+	return messages, nil
 }
 
 func getMessageBody(id string) (string, error) {
@@ -52,6 +55,8 @@ func getMessageBody(id string) (string, error) {
 
 	// Parse response
 	var builder strings.Builder
-	_, err = io.Copy(&builder, resp.Body)
-	return builder.String(), fmt.Errorf("failed to parse get message body response: %w", err)
+	if _, err = io.Copy(&builder, resp.Body); err != nil {
+		return "", fmt.Errorf("failed to parse get message body response: %w", err)
+	}
+	return builder.String(), nil
 }

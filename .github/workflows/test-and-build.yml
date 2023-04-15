@@ -33,16 +33,26 @@ jobs:
             --disable noctx
             --exclude 'func name will be used as send.SendEmail'
 
+      - name: Start E2E services
+        run: |
+          docker compose -f test/docker-compose.yml up -d
+
       - name: Run tests
         run: |
           go test ./...
 
-      - name: Build binary
+      - name: Build binaries
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-extldflags=-static' -o smtp-cli
+          mkdir output
+          export CGO_ENABLED=0
+          export GOOS=linux
+          GOARCH=amd64 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-amd64
+          GOARCH=arm GOARM=6 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-armv6
+          GOARCH=arm GOARM=7 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-armv7
+          GOARCH=arm64 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-arm64
 
       - uses: actions/upload-artifact@v3
         with:
           name: smtp-cli
-          path: smtp-cli
+          path: output/
           if-no-files-found: error

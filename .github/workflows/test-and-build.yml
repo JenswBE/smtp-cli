@@ -42,17 +42,22 @@ jobs:
           go test ./...
 
       - name: Build binaries
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          mkdir output
           export CGO_ENABLED=0
           export GOOS=linux
-          GOARCH=amd64 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-amd64
-          GOARCH=arm GOARM=6 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-armv6
-          GOARCH=arm GOARM=7 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-armv7
-          GOARCH=arm64 go build -ldflags='-extldflags=-static' -o output/smtp-cli.linux-arm64
+          GOARCH=amd64 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-amd64
+          GOARCH=arm GOARM=6 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-armv6
+          GOARCH=arm GOARM=7 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-armv7
+          GOARCH=arm64 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-arm64
 
-      - uses: actions/upload-artifact@v3
+      - name: Create release on tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
-          name: smtp-cli
-          path: output/
-          if-no-files-found: error
+          generate_release_notes: true
+          files: |
+            smtp-cli.linux-amd64
+            smtp-cli.linux-armv6
+            smtp-cli.linux-armv7
+            smtp-cli.linux-arm64

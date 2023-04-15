@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -9,9 +10,12 @@ import (
 	"github.com/jenswbe/smtp-cli/send"
 )
 
+var Version = "unknown"
+
 func main() {
 	// Parse flags
 	var (
+		printVersion     = flag.Bool("version", false, "Print version and exit")
 		host             = flag.String("host", "localhost", "Hostname of the server")
 		port             = flag.Uint("port", 465, "Port of the server")
 		username         = flag.String("username", "", "Username for authentication")
@@ -24,6 +28,11 @@ func main() {
 		allowInsecureTLS = flag.Bool("allow-insecure-tls", false, "Skip TLS certificate verification. Should only be used for testing!")
 	)
 	flag.Parse()
+
+	if *printVersion {
+		fmt.Println(Version) //nolint
+		return
+	}
 
 	// Send email
 	err := send.SendEmail(send.EmailConfig{

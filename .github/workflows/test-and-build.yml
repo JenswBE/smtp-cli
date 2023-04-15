@@ -47,20 +47,24 @@ jobs:
       - name: Build binaries
         if: startsWith(github.ref, 'refs/tags/')
         run: |
+          BIN_NAME='smtp-cli_${{ github.ref_name }}_${GOOS:?}_${GOARCH:?}${GOARM_PREFIX}${GOARM}'
+          DEFAULT_ARGS="-ldflags='-X main.Version=${{ github.ref_name }} -extldflags=-static'"
           export CGO_ENABLED=0
           export GOOS=linux
-          GOARCH=amd64 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-amd64
-          GOARCH=arm GOARM=6 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-armv6
-          GOARCH=arm GOARM=7 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-armv7
-          GOARCH=arm64 go build -ldflags='-extldflags=-static' -o smtp-cli.linux-arm64
+
+          GOARCH=amd64 bash -c "go build ${DEFAULT_ARGS:?} -o ${BIN_NAME:?}"
+          GOARCH=arm GOARM_PREFIX=v GOARM=6 bash -c "go build ${DEFAULT_ARGS:?} -o ${BIN_NAME:?}"
+          GOARCH=arm GOARM_PREFIX=v GOARM=7 bash -c "go build ${DEFAULT_ARGS:?} -o ${BIN_NAME:?}"
+          GOARCH=arm64 bash -c "go build ${DEFAULT_ARGS:?} -o ${BIN_NAME:?}"
 
       - name: Create release on tag
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
+          fail_on_unmatched_files: true
           generate_release_notes: true
           files: |
-            smtp-cli.linux-amd64
-            smtp-cli.linux-armv6
-            smtp-cli.linux-armv7
-            smtp-cli.linux-arm64
+            smtp-cli_${{ github.ref_name }}_linux_amd64
+            smtp-cli_${{ github.ref_name }}_linux_armv6
+            smtp-cli_${{ github.ref_name }}_linux_armv7
+            smtp-cli_${{ github.ref_name }}_linux_arm64

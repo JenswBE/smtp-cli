@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,7 +30,7 @@ func (s *E2ETestSuite) SetupSuite() {
 		// Server still down
 		if i >= 10 {
 			// Exceeded 10 tries => Fail unit tests
-			require.FailNow(s.T(), "Unable to contact SMTP mock server after 20 seconds")
+			s.Require().FailNow("Unable to contact SMTP mock server after 20 seconds")
 		}
 		// Retry in 2 seconds
 		log.Info().Err(err).Msg("Polling SMTP mock server failed, retrying in 2 seconds")
@@ -42,5 +41,5 @@ func (s *E2ETestSuite) SetupSuite() {
 
 func (s *E2ETestSuite) SetupTest() {
 	err := clearMessages()
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 }

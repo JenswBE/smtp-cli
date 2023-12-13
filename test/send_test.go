@@ -4,7 +4,6 @@ import (
 	"bytes"
 
 	"github.com/jenswbe/smtp-cli/send"
-	"github.com/stretchr/testify/require"
 )
 
 func (s *E2ETestSuite) TestSendEmail() {
@@ -22,16 +21,16 @@ func (s *E2ETestSuite) TestSendEmail() {
 		BodyReader:       bytes.NewBufferString("TestBody"),
 		AllowInsecureTLS: true,
 	})
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 
 	// Validate email
 	messages, err := getMessages()
-	require.NoError(s.T(), err)
-	require.Len(s.T(), messages, 1, "Server should have received a single message")
-	require.Equal(s.T(), `"TestFromName" <TestFromAddress@example.com>`, messages[0].From)
-	require.Equal(s.T(), `"TestToName" <TestToAddress@example.com>`, messages[0].To)
-	require.Equal(s.T(), "TestSubject", messages[0].Subject)
+	s.Require().NoError(err)
+	s.Require().Len(messages, 1, "Server should have received a single message")
+	s.Require().Equal(`"TestFromName" <TestFromAddress@example.com>`, messages[0].From)
+	s.Require().Equal(`"TestToName" <TestToAddress@example.com>`, messages[0].To)
+	s.Require().Equal("TestSubject", messages[0].Subject)
 	messageBody, err := getMessageBody(messages[0].ID)
-	require.NoError(s.T(), err)
-	require.Contains(s.T(), messageBody, "TestBody")
+	s.Require().NoError(err)
+	s.Require().Contains(messageBody, "TestBody")
 }

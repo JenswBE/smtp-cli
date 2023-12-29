@@ -142,9 +142,9 @@ func createSTARTTLSClient(host string, port uint, allowInsecureTLS bool) (*smtp.
 	// Switch to STARTTLS
 	tlsConfig := &tls.Config{
 		ServerName:         host,
-		InsecureSkipVerify: allowInsecureTLS,
+		InsecureSkipVerify: allowInsecureTLS, // #nosec G402
 	}
-	err = client.StartTLS(tlsConfig) // #nosec G402
+	err = client.StartTLS(tlsConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to switch to TLS using STARTTLS on server %s: %w", hostPort, err)
 	}

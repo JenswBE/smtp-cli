@@ -31,7 +31,7 @@ const (
 )
 
 func SendEmail(c EmailConfig) (err error) {
-	// Get client
+	// Create client
 	var client *smtp.Client
 	switch c.Security {
 	case EmailSecurityForceTLS:
@@ -40,6 +40,9 @@ func SendEmail(c EmailConfig) (err error) {
 		client, err = createSTARTTLSClient(c.Host, c.Port, c.AllowInsecureTLS)
 	default:
 		return fmt.Errorf("unknown email security option: %s", c.Security)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to create SMTP client: %w", err)
 	}
 
 	// Defer server connection close

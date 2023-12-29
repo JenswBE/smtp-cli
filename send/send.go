@@ -21,30 +21,44 @@ type EmailConfig struct {
 	ToAddress        string
 	Subject          string
 	BodyReader       io.Reader
+	Security         string
 	AllowInsecureTLS bool
 }
 
-func SendEmail(c EmailConfig) error {
-	// Connect to server
-	hostPort := fmt.Sprintf("%s:%d", c.Host, c.Port)
-	conn, err := tls.Dial("tcp", hostPort, &tls.Config{InsecureSkipVerify: c.AllowInsecureTLS}) // #nosec G402
-	if err != nil {
-		log.Error().Err(err).Str("server", hostPort).Msg("Failed to connect to SMTP server over TLS")
-		return fmt.Errorf("failed to connect to SMTP server over TLS: %w", err)
+const (
+	EmailSecurityForceTLS = "FORCE_TLS"
+	EmailSecuritySTARTTLS = "STARTTLS"
+)
+
+func SendEmail(c EmailConfig) (err error) {
+	// Get client
+	var client *smtp.Client
+	switch c.Security {
+	case EmailSecurityForceTLS:
+		client, err = createForceTLSClient(c.Host, c.Port, c.AllowInsecureTLS)
+	case EmailSecuritySTARTTLS:
+		client, err = createSTARTTLSClient(c.Host, c.Port, c.AllowInsecureTLS)
+	default:
+		return fmt.Errorf("unknown email security option: %s", c.Security)
 	}
 
-	// Start SMTP session
-	client, err := smtp.NewClient(conn, c.Host)
-	if err != nil {
-		log.Error().Err(err).Str("server", hostPort).Msg("Failed to create SMTP client from TLS connection")
-		return fmt.Errorf("failed to create SMTP client from TLS connection: %w", err)
-	}
+	// Defer server connection close
+	defer func() {
+		quitErr := client.Quit()
+		if quitErr != nil {
+			if err == nil {
+				err = fmt.Errorf("failed to close connection with server: %w", quitErr)
+			} else {
+				log.Error().Err(err).Msg("Failed to close connection with server")
+			}
+		}
+	}()
 
 	// Authenticate to server
 	if c.Username != "" || c.Password != "" {
 		err = client.Auth(smtp.PlainAuth("", c.Username, c.Password, c.Host))
 		if err != nil {
-			log.Error().Err(err).Str("server", hostPort).Msg("Failed to authenticate to SMTP server")
+			log.Error().Err(err).Msg("Failed to authenticate to SMTP server")
 			return fmt.Errorf("failed to authenticate to SMTP server: %w", err)
 		}
 	} else {
@@ -94,13 +108,38 @@ func SendEmail(c EmailConfig) error {
 		return fmt.Errorf("failed to close email body: %w", err)
 	}
 
-	// Close server connection
-	err = client.Quit()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to close connection with server")
-		return fmt.Errorf("failed to close connection with server: %w", err)
-	}
-
 	// Email sent successfully
 	return nil
+}
+
+func createForceTLSClient(host string, port uint, allowInsecureTLS bool) (*smtp.Client, error) {
+	// Connect to server
+	hostPort := fmt.Sprintf("%s:%d", host, port)
+	conn, err := tls.Dial("tcp", hostPort, &tls.Config{InsecureSkipVerify: allowInsecureTLS}) // #nosec G402
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to SMTP server at %s over TLS: %w", hostPort, err)
+	}
+
+	// Start SMTP session
+	client, err := smtp.NewClient(conn, host)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SMTP client from TLS connection at %s: %w", hostPort, err)
+	}
+	return client, nil
+}
+
+func createSTARTTLSClient(host string, port uint, allowInsecureTLS bool) (*smtp.Client, error) {
+	// Connect to server
+	hostPort := fmt.Sprintf("%s:%d", host, port)
+	client, err := smtp.Dial(hostPort)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to SMTP server at %s: %w", hostPort, err)
+	}
+
+	// Switch to STARTTLS
+	err = client.StartTLS(&tls.Config{InsecureSkipVerify: allowInsecureTLS}) // #nosec G402
+	if err != nil {
+		return nil, fmt.Errorf("failed to switch to TLS using STARTTLS on server %s: %w", hostPort, err)
+	}
+	return client, err
 }

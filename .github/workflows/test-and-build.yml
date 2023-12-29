@@ -33,7 +33,7 @@ jobs:
           version: latest
           args: >-
             --timeout=5m
-            --disable noctx
+            --disable goerr113,noctx,wrapcheck
             --exclude 'func name will be used as send.SendEmail'
 
       - name: Start E2E services

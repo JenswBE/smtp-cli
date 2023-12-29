@@ -2,5 +2,5 @@
 # Config is available at https://raw.githubusercontent.com/JenswBE/setup/main/programming_configs/golang/.golangci.yml
 golangci-lint run \
     -c ../setup/programming_configs/golang/.golangci.yml \
-    --disable noctx \
+    --disable goerr113,noctx,wrapcheck \
     --exclude 'func name will be used as send.SendEmail'

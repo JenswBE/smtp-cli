@@ -25,6 +25,7 @@ func main() {
 		toName           = flag.String("to-name", "", "Name of the receiver")
 		toAddress        = flag.String("to-address", "", "Address of the receiver")
 		subject          = flag.String("subject", "", "Subject of the email")
+		security         = flag.String("security", "FORCE_TLS", "Supported options: FORCE_TLS (= implicit TLS), STARTTLS")
 		allowInsecureTLS = flag.Bool("allow-insecure-tls", false, "Skip TLS certificate verification. Should only be used for testing!")
 	)
 	flag.Parse()
@@ -46,6 +47,7 @@ func main() {
 		ToAddress:        *toAddress,
 		Subject:          *subject,
 		BodyReader:       os.Stdin,
+		Security:         *security,
 		AllowInsecureTLS: *allowInsecureTLS,
 	})
 	if err != nil {

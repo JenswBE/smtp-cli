@@ -8,7 +8,10 @@ import (
 	"strings"
 )
 
-const smtpMockBaseURL = "http://localhost:8080"
+const (
+	smtpMockImplictTLSBaseURL = "http://localhost:8080"
+	smtpMockSTARTTLSBaseURL   = "http://localhost:8081"
+)
 
 type message struct {
 	ID      string `json:"id"`
@@ -17,9 +20,9 @@ type message struct {
 	Subject string `json:"subject"`
 }
 
-func clearMessages() error {
+func clearMessages(baseURL string) error {
 	// /api/Messages/*
-	req, _ := http.NewRequest(http.MethodDelete, smtpMockBaseURL+"/api/Messages/*", nil)
+	req, _ := http.NewRequest(http.MethodDelete, baseURL+"/api/Messages/*", nil)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to clear messages: %w", err)
@@ -28,9 +31,9 @@ func clearMessages() error {
 	return nil
 }
 
-func getMessages() ([]message, error) {
+func getMessages(baseURL string) ([]message, error) {
 	// Call SMTP mock server
-	resp, err := http.Get(smtpMockBaseURL + "/api/Messages")
+	resp, err := http.Get(baseURL + "/api/Messages")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages: %w", err)
 	}
@@ -44,9 +47,9 @@ func getMessages() ([]message, error) {
 	return messages, nil
 }
 
-func getMessageBody(id string) (string, error) {
+func getMessageBody(baseURL string, id string) (string, error) {
 	// Call SMTP mock server
-	url := fmt.Sprintf("%s/api/Messages/%s/raw", smtpMockBaseURL, id)
+	url := fmt.Sprintf("%s/api/Messages/%s/raw", baseURL, id)
 	resp, err := http.Get(url) // #nosec G107
 	if err != nil {
 		return "", fmt.Errorf("failed to get message body: %w", err)

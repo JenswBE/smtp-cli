@@ -1,6 +1,6 @@
 module github.com/jenswbe/smtp-cli
 
-go 1.20
+go 1.22
 
 require (
 	github.com/rs/zerolog v1.32.0

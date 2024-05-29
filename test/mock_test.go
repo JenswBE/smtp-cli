@@ -13,11 +13,24 @@ const (
 	smtpMockSTARTTLSBaseURL   = "http://localhost:8081"
 )
 
+type getMessagesResponse struct {
+	Messages []message `json:"results"`
+}
+
 type message struct {
-	ID      string `json:"id"`
-	From    string `json:"from"`
-	To      string `json:"to"`
-	Subject string `json:"subject"`
+	ID      string   `json:"id"`
+	From    string   `json:"from"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+}
+
+func pingServer(baseURL string) error {
+	resp, err := http.Get(baseURL + "/api/Version")
+	if err != nil {
+		return fmt.Errorf("failed to ping server: %w", err)
+	}
+	_ = resp.Body.Close()
+	return nil
 }
 
 func clearMessages(baseURL string) error {
@@ -39,12 +52,18 @@ func getMessages(baseURL string) ([]message, error) {
 	}
 	defer resp.Body.Close()
 
-	// Parse response
-	var messages []message
-	if err = json.NewDecoder(resp.Body).Decode(&messages); err != nil {
-		return nil, fmt.Errorf("failed to parse get messages response: %w", err)
+	// Read response
+	rawResponse, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
-	return messages, nil
+
+	// Parse response
+	response := getMessagesResponse{}
+	if err = json.Unmarshal(rawResponse, &response); err != nil {
+		return nil, fmt.Errorf("failed to parse get messages response: %w. Body: %v", err, string(rawResponse))
+	}
+	return response.Messages, nil
 }
 
 func getMessageBody(baseURL string, id string) (string, error) {

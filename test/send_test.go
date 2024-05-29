@@ -42,7 +42,7 @@ func validateEmailMessages(s *E2ETestSuite, baseURL string) {
 	s.Require().NoError(err)
 	s.Require().Len(messages, 1, "Server should have received a single message")
 	s.Require().Equal(`"TestFromName" <TestFromAddress@example.com>`, messages[0].From)
-	s.Require().Equal(`"TestToName" <TestToAddress@example.com>`, messages[0].To)
+	s.Require().Equal(`"TestToName" <TestToAddress@example.com>`, messages[0].To[0])
 	s.Require().Equal("TestSubject", messages[0].Subject)
 	messageBody, err := getMessageBody(baseURL, messages[0].ID)
 	s.Require().NoError(err)

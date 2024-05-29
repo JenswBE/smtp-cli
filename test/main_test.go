@@ -31,7 +31,7 @@ func (s *E2ETestSuite) SetupSuite() {
 
 func checkSMTPMockRunning(s *E2ETestSuite, baseURL string) {
 	for i := 0; true; i++ {
-		_, err := getMessages(baseURL)
+		err := pingServer(baseURL)
 		if err == nil {
 			// Server started
 			break
@@ -39,10 +39,10 @@ func checkSMTPMockRunning(s *E2ETestSuite, baseURL string) {
 		// Server still down
 		if i >= 10 {
 			// Exceeded 10 tries => Fail unit tests
-			s.Require().FailNow("Unable to contact SMTP mock server after 20 seconds")
+			s.Require().FailNow("Unable to contact API of SMTP mock server after 20 seconds")
 		}
 		// Retry in 2 seconds
-		log.Info().Err(err).Msg("Polling SMTP mock server failed, retrying in 2 seconds")
+		log.Info().Err(err).Msg("Polling API of SMTP mock server failed, retrying in 2 seconds")
 		time.Sleep(2 * time.Second)
 	}
 }

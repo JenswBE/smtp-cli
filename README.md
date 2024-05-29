@@ -12,7 +12,7 @@ echo My email body | ./smtp-cli --subject ...
 ## Local testing
 
 ```bash
-podman-compose -f test/docker-compose.yml up -d
+podman compose -f test/docker-compose.yml up -d
 go test ./...
-podman-compose -f test/docker-compose.yml down
+podman compose -f test/docker-compose.yml down
 ```

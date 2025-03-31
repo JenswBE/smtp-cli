@@ -1,6 +1,5 @@
 # This script is intended to be sourced like "source lint.sh" or ". lint.sh".
-# Config is available at https://raw.githubusercontent.com/JenswBE/setup/main/programming_configs/golang/.golangci.yml
+curl --silent https://raw.githubusercontent.com/JenswBE/setup/main/programming_configs/golang/.golangci.yml -o .golangci.yml
 golangci-lint run \
-    -c ../setup/programming_configs/golang/.golangci.yml \
-    --disable goerr113,noctx,wrapcheck \
-    --exclude 'func name will be used as send.SendEmail'
+    --disable err113,noctx,wrapcheck
+rm .golangci.yml

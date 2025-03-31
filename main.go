@@ -7,7 +7,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/jenswbe/smtp-cli/send"
+	"github.com/jenswbe/smtp-cli/email"
 )
 
 var Version = "unknown"
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	// Send email
-	err := send.SendEmail(send.EmailConfig{
+	err := email.Send(email.Config{
 		Host:             *host,
 		Port:             *port,
 		Username:         *username,

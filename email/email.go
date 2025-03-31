@@ -1,4 +1,4 @@
-package send
+package email
 
 import (
 	"crypto/tls"
@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type EmailConfig struct {
+type Config struct {
 	Host             string
 	Port             uint
 	Username         string
@@ -26,17 +26,17 @@ type EmailConfig struct {
 }
 
 const (
-	EmailSecurityForceTLS = "FORCE_TLS"
-	EmailSecuritySTARTTLS = "STARTTLS"
+	SecurityForceTLS = "FORCE_TLS"
+	SecuritySTARTTLS = "STARTTLS"
 )
 
-func SendEmail(c EmailConfig) (err error) {
+func Send(c Config) (err error) {
 	// Create client
 	var client *smtp.Client
 	switch c.Security {
-	case EmailSecurityForceTLS:
+	case SecurityForceTLS:
 		client, err = createForceTLSClient(c.Host, c.Port, c.AllowInsecureTLS)
-	case EmailSecuritySTARTTLS:
+	case SecuritySTARTTLS:
 		client, err = createSTARTTLSClient(c.Host, c.Port, c.AllowInsecureTLS)
 	default:
 		return fmt.Errorf("unknown email security option: %s", c.Security)

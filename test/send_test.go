@@ -3,25 +3,25 @@ package test
 import (
 	"bytes"
 
-	"github.com/jenswbe/smtp-cli/send"
+	"github.com/jenswbe/smtp-cli/email"
 )
 
 func (s *E2ETestSuite) TestSendEmailImplicitTLS() {
-	config := getEmailConfig(smtpPortImplicitTLS, send.EmailSecurityForceTLS)
-	err := send.SendEmail(config)
+	config := getEmailConfig(smtpPortImplicitTLS, email.SecurityForceTLS)
+	err := email.Send(config)
 	s.Require().NoError(err)
 	validateEmailMessages(s, smtpMockImplictTLSBaseURL)
 }
 
 func (s *E2ETestSuite) TestSendEmailSTARTTLS() {
-	config := getEmailConfig(smtpPortSTARTTLS, send.EmailSecuritySTARTTLS)
-	err := send.SendEmail(config)
+	config := getEmailConfig(smtpPortSTARTTLS, email.SecuritySTARTTLS)
+	err := email.Send(config)
 	s.Require().NoError(err)
 	validateEmailMessages(s, smtpMockSTARTTLSBaseURL)
 }
 
-func getEmailConfig(port uint, security string) send.EmailConfig {
-	return send.EmailConfig{
+func getEmailConfig(port uint, security string) email.Config {
+	return email.Config{
 		Host:             "localhost",
 		Port:             port,
 		Username:         "TestUsername",

@@ -31,8 +31,6 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: latest
-          args: >-
-            --disable err113,noctx,wrapcheck
 
       - name: Start E2E services
         run: |

@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -50,7 +52,7 @@ func getMessages(baseURL string) ([]message, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages: %w", err)
 	}
-	defer resp.Body.Close()
+	defer silentClose(resp.Body)
 
 	// Read response
 	rawResponse, err := io.ReadAll(resp.Body)
@@ -73,7 +75,7 @@ func getMessageBody(baseURL string, id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get message body: %w", err)
 	}
-	defer resp.Body.Close()
+	defer silentClose(resp.Body)
 
 	// Parse response
 	var builder strings.Builder
@@ -81,4 +83,11 @@ func getMessageBody(baseURL string, id string) (string, error) {
 		return "", fmt.Errorf("failed to parse get message body response: %w", err)
 	}
 	return builder.String(), nil
+}
+
+func silentClose(closer io.Closer) {
+	err := closer.Close()
+	if err != nil {
+		log.Printf("Failed to close body: %v", err)
+	}
 }

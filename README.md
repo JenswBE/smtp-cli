@@ -16,3 +16,10 @@ podman compose -f test/docker-compose.yml up -d
 go test ./...
 podman compose -f test/docker-compose.yml down
 ```
+
+## Release new version
+
+```bash
+git tag vX.Y.Z
+git push --tags
+```

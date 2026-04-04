@@ -32,6 +32,11 @@ jobs:
         with:
           version: latest
 
+      - name: Ensure all fixes are applied
+        run: |
+          go fix ./...
+          git diff --exit-code
+
       - name: Start E2E services
         run: |
           docker compose -f test/docker-compose.yml up -d

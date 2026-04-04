@@ -3,9 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
-
-	"github.com/rs/zerolog/log"
 
 	"github.com/jenswbe/smtp-cli/email"
 )
@@ -51,7 +50,8 @@ func main() {
 		AllowInsecureTLS: *allowInsecureTLS,
 	})
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to send email")
+		slog.Error("Failed to send email", "error", err)
+		os.Exit(1)
 	}
-	log.Info().Str("subject", *subject).Str("to_name", *toName).Str("to_address", *toAddress).Msg("Email successfully sent")
+	slog.Info("Email successfully sent", "subject", *subject, "to_name", *toName, "to_address", *toAddress)
 }

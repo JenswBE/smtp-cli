@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
-
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -88,6 +87,6 @@ func getMessageBody(baseURL string, id string) (string, error) {
 func silentClose(closer io.Closer) {
 	err := closer.Close()
 	if err != nil {
-		log.Printf("Failed to close body: %v", err)
+		slog.Error("Failed to close body", "error", err)
 	}
 }

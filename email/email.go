@@ -4,10 +4,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/mail"
 	"net/smtp"
-
-	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
@@ -52,7 +51,7 @@ func Send(c Config) (err error) {
 			if err == nil {
 				err = fmt.Errorf("failed to close connection with server: %w", quitErr)
 			} else {
-				log.Error().Err(err).Msg("Failed to close connection with server")
+				slog.Error("Failed to close connection with server", "error", err)
 			}
 		}
 	}()
@@ -61,11 +60,11 @@ func Send(c Config) (err error) {
 	if c.Username != "" || c.Password != "" {
 		err = client.Auth(smtp.PlainAuth("", c.Username, c.Password, c.Host))
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to authenticate to SMTP server")
+			slog.Error("Failed to authenticate to SMTP server", "error", err)
 			return fmt.Errorf("failed to authenticate to SMTP server: %w", err)
 		}
 	} else {
-		log.Debug().Msg("Authentication skipped as both username and password are empty")
+		slog.Debug("Authentication skipped as both username and password are empty")
 	}
 
 	// Set the sender and recipient
@@ -75,39 +74,39 @@ func Send(c Config) (err error) {
 	}
 	from := mail.Address{Name: c.FromName, Address: c.FromAddress}
 	if err := client.Mail(from.String()); err != nil {
-		log.Error().Err(err).Str("from_name", c.FromName).Str("from_address", c.FromAddress).Msg("Failed to send MAIL command to server and set sender")
+		slog.Error("Failed to send MAIL command to server and set sender", "from_name", c.FromName, "from_address", c.FromAddress, "error", err)
 		return fmt.Errorf("failed to send MAIL command to server and set sender: %w", err)
 	}
 	to := mail.Address{Name: c.ToName, Address: c.ToAddress}
 	if err := client.Rcpt(to.String()); err != nil {
-		log.Error().Err(err).Str("to_name", c.ToName).Str("to_address", c.ToAddress).Msg("Failed to send RCPT command to server and set receiver")
+		slog.Error("Failed to send RCPT command to server and set receiver", "to_name", c.ToName, "to_address", c.ToAddress, "error", err)
 		return fmt.Errorf("failed to send RCPT command to server and set receiver: %w", err)
 	}
 
 	// Send the email body from stdin
 	bodyWriter, err := client.Data()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to send DATA command to server")
+		slog.Error("Failed to send DATA command to server", "error", err)
 		return fmt.Errorf("failed to send DATA command to server: %w", err)
 	}
 	_, err = io.WriteString(bodyWriter, fmt.Sprintf("Subject: %s\r\n\r\n", c.Subject))
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to write subject to email body")
+		slog.Error("Failed to write subject to email body", "error", err)
 		return fmt.Errorf("failed to write subject to email body: %w", err)
 	}
 	_, err = io.Copy(bodyWriter, c.BodyReader)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to write message from stdin to email body")
+		slog.Error("Failed to write message from stdin to email body", "error", err)
 		return fmt.Errorf("failed to write message from stdin to email body: %w", err)
 	}
 	_, err = io.WriteString(bodyWriter, "\r\n")
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to write final new line to email body")
+		slog.Error("Failed to write final new line to email body", "error", err)
 		return fmt.Errorf("failed to write final new line to email body: %w", err)
 	}
 	err = bodyWriter.Close()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to close email body")
+		slog.Error("Failed to close email body", "error", err)
 		return fmt.Errorf("failed to close email body: %w", err)
 	}
 

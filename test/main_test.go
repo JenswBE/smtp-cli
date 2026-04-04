@@ -1,10 +1,10 @@
 package test
 
 import (
+	"log/slog"
 	"testing"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -23,10 +23,10 @@ func Test_E2ETestSuite(t *testing.T) {
 
 func (s *E2ETestSuite) SetupSuite() {
 	// Poll SMTP mock server for completed start
-	log.Info().Msg("Checking if SMTP mock servers are reachable ...")
+	slog.Info("Checking if SMTP mock servers are reachable ...")
 	checkSMTPMockRunning(s, smtpMockImplictTLSBaseURL)
 	checkSMTPMockRunning(s, smtpMockSTARTTLSBaseURL)
-	log.Info().Msg("SMTP mock servers up and running")
+	slog.Info("SMTP mock servers up and running")
 }
 
 func checkSMTPMockRunning(s *E2ETestSuite, baseURL string) {
@@ -42,7 +42,7 @@ func checkSMTPMockRunning(s *E2ETestSuite, baseURL string) {
 			s.Require().FailNow("Unable to contact API of SMTP mock server after 20 seconds")
 		}
 		// Retry in 2 seconds
-		log.Info().Err(err).Msg("Polling API of SMTP mock server failed, retrying in 2 seconds")
+		slog.Info("Polling API of SMTP mock server failed, retrying in 2 seconds", "error", err)
 		time.Sleep(2 * time.Second)
 	}
 }

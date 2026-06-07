@@ -29,6 +29,11 @@ func main() {
 	)
 	flag.Parse()
 
+	if flag.NArg() > 0 {
+		slog.Error("Unknown flags provided", "flags", flag.Args())
+		os.Exit(1)
+	}
+
 	if *printVersion {
 		fmt.Println(Version) //nolint
 		return
